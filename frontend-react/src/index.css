@@ -1,0 +1,111 @@
+/* Reset básico */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Centrar todo en la pantalla */
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f4f9;
+  height: 100vh;
+  display: flex;
+  justify-content: center; /* centrar horizontal */
+  align-items: center;     /* centrar vertical */
+}
+
+/* Contenedor principal */
+.container {
+  width: 100%;
+  max-width: 600px;
+  background: white;
+  padding: 25px 30px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Títulos */
+h1, h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+/* Formulario */
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Grupos de input */
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Labels */
+.form-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+/* Inputs y select */
+.form-group input, 
+.form-group select {
+  padding: 10px;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  transition: border 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+/* Radios */
+.form-group div label {
+  margin-right: 15px;
+  font-weight: normal;
+}
+
+/* Botón */
+button {
+  padding: 12px;
+  font-size: 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+/* Errores */
+.error {
+  color: red;
+  font-size: 0.85rem;
+  margin-top: 3px;
+}
+
+/* Lista de usuarios */
+.usuarios-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+  border-top: 1px solid #ccc;
+}
+
+.usuarios-list li {
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 0.95rem;
+}
