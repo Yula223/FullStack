@@ -10,6 +10,7 @@ function App() {
     genero: "",
     ciudad: "",
     correo: "",
+    id: null, // Para saber si estamos editando
   });
 
   const [usuarios, setUsuarios] = useState([]);
@@ -40,14 +41,27 @@ function App() {
     if (Object.keys(errs).length > 0) return;
 
     try {
-      const res = await fetch("http://localhost:3000/usuarios", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      let res;
+      if (formData.id) {
+        // Actualizar usuario
+        res = await fetch(`http://localhost:5000/usuarios/${formData.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+      } else {
+        // Crear usuario
+        res = await fetch("http://localhost:5000/usuarios", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+      }
+
       const data = await res.json();
       alert(data.message);
 
+      // Limpiar formulario
       setFormData({
         dni: "",
         nombres: "",
@@ -56,6 +70,7 @@ function App() {
         genero: "",
         ciudad: "",
         correo: "",
+        id: null,
       });
 
       getUsuarios();
@@ -65,9 +80,23 @@ function App() {
     }
   };
 
+  const handleCancel = () => {
+    // Resetear el formulario si el usuario desea cancelar
+    setFormData({
+      dni: "",
+      nombres: "",
+      apellidos: "",
+      fecha_nacimiento: "",
+      genero: "",
+      ciudad: "",
+      correo: "",
+      id: null, // Vuelve al estado de "nuevo"
+    });
+  };
+
   const getUsuarios = async () => {
     try {
-      const res = await fetch("http://localhost:3000/usuarios");
+      const res = await fetch("http://localhost:5000/usuarios");
       const data = await res.json();
       setUsuarios(data);
     } catch (err) {
@@ -78,6 +107,32 @@ function App() {
   useEffect(() => {
     getUsuarios();
   }, []);
+
+  // Editar usuario
+  const editUsuario = (usuario) => {
+    setFormData({
+      dni: usuario.dni,
+      nombres: usuario.nombres,
+      apellidos: usuario.apellidos,
+      fecha_nacimiento: usuario.fecha_nacimiento,
+      genero: usuario.genero,
+      ciudad: usuario.ciudad,
+      correo: usuario.correo || "",
+      id: usuario.id,
+    });
+  };
+
+  // Eliminar usuario
+  const deleteUsuario = async (id) => {
+    if (!window.confirm("¿Seguro que quieres eliminar este usuario?")) return;
+    try {
+      await fetch(`http://localhost:5000/usuarios/${id}`, { method: "DELETE" });
+      getUsuarios();
+    } catch (err) {
+      console.error(err);
+      alert("Error al eliminar usuario");
+    }
+  };
 
   return (
     <div className="container">
@@ -111,10 +166,10 @@ function App() {
           <label>Género:</label>
           <div>
             <label>
-              <input type="radio" name="genero" value="Masculino" onChange={handleChange} /> Masculino
+              <input type="radio" name="genero" value="Masculino" onChange={handleChange} checked={formData.genero === "Masculino"} /> Masculino
             </label>
             <label>
-              <input type="radio" name="genero" value="Femenino" onChange={handleChange} /> Femenino
+              <input type="radio" name="genero" value="Femenino" onChange={handleChange} checked={formData.genero === "Femenino"} /> Femenino
             </label>
           </div>
           {errors.genero && <span className="error">{errors.genero}</span>}
@@ -137,7 +192,21 @@ function App() {
           {errors.correo && <span className="error">{errors.correo}</span>}
         </div>
 
-        <button type="submit">Guardar</button>
+        <button type="submit">{formData.id ? "Actualizar" : "Guardar"}</button>
+
+        {formData.id && (
+          <button
+            type="button"
+            onClick={handleCancel}
+            style={{
+              backgroundColor: "#e74c3c",
+              marginTop: "10px",
+              marginLeft: "10px",
+            }}
+          >
+            Cancelar
+          </button>
+        )}
       </form>
 
       <h2>Lista de Usuarios</h2>
@@ -145,6 +214,8 @@ function App() {
         {usuarios.map((u) => (
           <li key={u.id}>
             {u.dni} - {u.nombres} {u.apellidos} ({u.genero}, {u.ciudad}) {u.correo && `- ${u.correo}`}
+            <button onClick={() => editUsuario(u)}>Editar</button>
+            <button onClick={() => deleteUsuario(u.id)}>Eliminar</button>
           </li>
         ))}
       </ul>

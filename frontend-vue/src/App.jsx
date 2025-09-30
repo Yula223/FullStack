@@ -15,6 +15,7 @@ function App() {
 
   const [usuarios, setUsuarios] = useState([]);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);  // Estado de carga
 
   // Validaciones de formulario
   const validate = () => {
@@ -41,17 +42,19 @@ function App() {
     if (Object.keys(errs).length > 0) return;
 
     try {
+      setLoading(true);  // Activar el estado de carga
+
       let res;
       if (formData.id) {
         // Actualizar usuario
-        res = await fetch(`http://localhost:3000/usuarios/${formData.id}`, {
+        res = await fetch(`http://localhost:5000/usuarios/${formData.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
         });
       } else {
         // Crear usuario
-        res = await fetch("http://localhost:3000/usuarios", {
+        res = await fetch("http://localhost:5000/usuarios", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
@@ -70,24 +73,45 @@ function App() {
         genero: "",
         ciudad: "",
         correo: "",
-        id: null,
+        id: null, // Resetear el id para crear un nuevo usuario
       });
 
+      // Recargar usuarios
       getUsuarios();
+
     } catch (err) {
       console.error(err);
       alert("Error al guardar usuario");
+    } finally {
+      setLoading(false);  // Desactivar el estado de carga
     }
+  };
+
+  const handleCancel = () => {
+    // Resetear el formulario si el usuario desea cancelar
+    setFormData({
+      dni: "",
+      nombres: "",
+      apellidos: "",
+      fecha_nacimiento: "",
+      genero: "",
+      ciudad: "",
+      correo: "",
+      id: null, // Vuelve al estado de "nuevo"
+    });
   };
 
   // Leer usuarios
   const getUsuarios = async () => {
+    setLoading(true);  // Activar el estado de carga
     try {
-      const res = await fetch("http://localhost:3000/usuarios");
+      const res = await fetch("http://localhost:5000/usuarios");
       const data = await res.json();
       setUsuarios(data);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);  // Desactivar el estado de carga
     }
   };
 
@@ -113,8 +137,8 @@ function App() {
   const deleteUsuario = async (id) => {
     if (!window.confirm("¿Seguro que quieres eliminar este usuario?")) return;
     try {
-      await fetch(`http://localhost:3000/usuarios/${id}`, { method: "DELETE" });
-      getUsuarios();
+      await fetch(`http://localhost:5000/usuarios/${id}`, { method: "DELETE" });
+      getUsuarios();  // Recargar la lista de usuarios
     } catch (err) {
       console.error(err);
       alert("Error al eliminar usuario");
@@ -180,18 +204,34 @@ function App() {
         </div>
 
         <button type="submit">{formData.id ? "Actualizar" : "Guardar"}</button>
+
+        {formData.id && (
+          <button
+            type="button"
+            onClick={handleCancel}
+            style={{
+              backgroundColor: "#e74c3c",
+              marginTop: "10px",
+              marginLeft: "10px",
+            }}
+          >
+            Cancelar
+          </button>
+        )}
       </form>
 
       <h2>Lista de Usuarios</h2>
-      <ul className="usuarios-list">
-        {usuarios.map((u) => (
-          <li key={u.id}>
-            {u.dni} - {u.nombres} {u.apellidos} ({u.genero}, {u.ciudad}) {u.correo && `- ${u.correo}`}
-            <button className="btn-edit" onClick={() => editUsuario(u)}>Editar</button>
-            <button className="btn-delete" onClick={() => deleteUsuario(u.id)}>Eliminar</button>
-          </li>
-        ))}
-      </ul>
+      {loading ? <p>Cargando...</p> : (
+        <ul className="usuarios-list">
+          {usuarios.map((u) => (
+            <li key={u.id}>
+              {u.dni} - {u.nombres} {u.apellidos} ({u.genero}, {u.ciudad}) {u.correo && `- ${u.correo}`}
+              <button className="btn-edit" onClick={() => editUsuario(u)}>Editar</button>
+              <button className="btn-delete" onClick={() => deleteUsuario(u.id)}>Eliminar</button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
